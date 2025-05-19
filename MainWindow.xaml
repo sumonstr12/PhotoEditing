@@ -1,0 +1,358 @@
+﻿<Window x:Class="PhotoEditor_WPF_.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PhotoEditor_WPF_"
+        mc:Ignorable="d"
+        Title="Photo Editor Pro" Height="600" Width="1000"
+        MinHeight="400" MinWidth="800" MaxHeight="1200" MaxWidth="1600"
+
+        WindowStartupLocation="CenterScreen"
+        Background="#FF2D2D30">
+    <Window.Resources>
+        <!-- Define styles for buttons -->
+        <Style x:Key="ToolButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#FF3A3A3D"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FF555555"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#FF777777"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style for labels -->
+        <Style x:Key="LabelStyle" TargetType="Label">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+
+        <!-- Style for MenuItem -->
+        <Style x:Key="MenuItemStyle" TargetType="MenuItem">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#FF1E1E1E"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border x:Name="Bg" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <DockPanel>
+                                <ContentPresenter x:Name="HeaderHost" ContentSource="Header" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"/>
+                                <Popup x:Name="SubMenuPopup" AllowsTransparency="True" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}" Placement="Bottom" Focusable="False" PopupAnimation="Fade">
+                                    <Border Background="#FF1E1E1E" BorderBrush="#FF555555" BorderThickness="1">
+                                        <StackPanel IsItemsHost="True"/>
+                                    </Border>
+                                </Popup>
+                            </DockPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Bg" Property="Background" Value="#FF333337"/>
+                            </Trigger>
+                            <Trigger Property="IsSubmenuOpen" Value="True">
+                                <Setter TargetName="Bg" Property="Background" Value="#FF333337"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style for Submenu Items -->
+        <Style TargetType="MenuItem" BasedOn="{StaticResource MenuItemStyle}"/>
+    </Window.Resources>
+
+    <!-- Define Keyboard Shortcuts -->
+    <Window.InputBindings>
+        <KeyBinding Key="O" Modifiers="Ctrl" Command="{Binding OpenCommand}"/>
+        <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding SaveCommand}"/>
+        <KeyBinding Key="Z" Modifiers="Ctrl" Command="{Binding UndoCommand}"/>
+        <KeyBinding Key="Y" Modifiers="Ctrl" Command="{Binding RedoCommand}"/>
+        <KeyBinding Key="F4" Modifiers="Alt" Command="{Binding ExitCommand}"/>
+    </Window.InputBindings>
+
+    <DockPanel LastChildFill="True">
+        <!-- Menu Bar -->
+        <Menu DockPanel.Dock="Top" Background="#FF1E1E1E" Foreground="White">
+            <MenuItem Header="_File" Style="{StaticResource MenuItemStyle}">
+                <MenuItem Header="_Open" InputGestureText="Ctrl+O" Command="{Binding OpenCommand}"/>
+                <MenuItem Header="_Save" InputGestureText="Ctrl+S" Command="{Binding SaveCommand}"/>
+                <MenuItem Header="_Save As..."/>
+                <Separator/>
+                <MenuItem Header="_Exit" InputGestureText="Alt+F4" Command="{Binding ExitCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_Edit" Style="{StaticResource MenuItemStyle}">
+                <MenuItem Header="_Undo" InputGestureText="Ctrl+Z" Command="{Binding UndoCommand}"/>
+                <MenuItem Header="_Redo" InputGestureText="Ctrl+Y" Command="{Binding RedoCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_Image" Style="{StaticResource MenuItemStyle}" Click="MenuItem_Click">
+                <MenuItem Header="_Crop"/>
+                <MenuItem Header="_Resize"/>
+                <MenuItem Header="_Adjust Colors"/>
+            </MenuItem>
+            <MenuItem Header="_Help" Style="{StaticResource MenuItemStyle}">
+                <MenuItem Header="_About" Command="{Binding AboutCommand}"/>
+            </MenuItem>
+        </Menu>
+
+		<!-- Toolbar -->
+		<ToolBar DockPanel.Dock="Top" Background="#FF1E1E1E" Padding="8">
+			<!-- Open Button -->
+			<Button Style="{StaticResource ToolButtonStyle}" ToolTip="Open Image (Ctrl+O)" Command="{Binding OpenCommand}" Margin="4,0">
+				<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+					<Image Source="pack://application:,,,/Images/open.png" Width="20" Height="20" Margin="0,0,5,0"/>
+					<TextBlock Text="Open" Foreground="White" FontWeight="SemiBold"/>
+				</StackPanel>
+			</Button>
+
+			<!-- Save Button -->
+			<Button Style="{StaticResource ToolButtonStyle}" ToolTip="Save Image (Ctrl+S)" Command="{Binding SaveCommand}" Margin="4,0">
+				<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+					<Image Source="pack://application:,,,/Images/save.png" Width="20" Height="20" Margin="0,0,5,0"/>
+					<TextBlock Text="Save" Foreground="White" FontWeight="SemiBold"/>
+				</StackPanel>
+			</Button>
+
+			<Separator Margin="10,0" Background="#444"/>
+
+			<!-- Zoom Controls -->
+			<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0">
+				<Button Content="🔍 Zoom In" Click="ZoomInButton_Click" Style="{StaticResource ToolButtonStyle}" ToolTip="Zoom In (Ctrl + '+')" Margin="4,0"/>
+				<Button Content="🔎 Zoom Out" Click="ZoomOutButton_Click" Style="{StaticResource ToolButtonStyle}" ToolTip="Zoom Out (Ctrl + '-')" Margin="4,0"/>
+				<Button Content="↺ Reset Zoom" Click="ResetZoomButton_Click" Style="{StaticResource ToolButtonStyle}" ToolTip="Reset Zoom" Margin="4,0"/>
+			</StackPanel>
+
+			<!-- Optional separator -->
+			<Separator Margin="10,0" Background="#444"/>
+		</ToolBar>
+
+		
+		
+		
+		
+
+		<!-- Status Bar -->
+        <StatusBar DockPanel.Dock="Bottom" Background="#FF1E1E1E" Foreground="White">
+            <StatusBarItem>
+                <TextBlock Text="Ready" FontFamily="Segoe UI" FontSize="12"/>
+            </StatusBarItem>
+        </StatusBar>
+
+        <!-- Main Content -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <!-- Tools Panel -->
+                <ColumnDefinition Width="200"/>
+                <!-- Workspace -->
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            
+            
+            <!--S Code-->
+            <!-- Tools Panel -->
+            <Border Grid.Column="0" Background="#FF333337" BorderBrush="#FF555555" BorderThickness="0,0,1,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0">
+                    <StackPanel Margin="10">
+                        <!-- Label for Tools -->
+                        <Label Content="Tools" FontSize="16" FontWeight="Bold" Foreground="White"/>
+
+                        <!-- Buttons with Unified Style -->
+                        <Button Content="Crop" Style="{StaticResource ToolButtonStyle}" Click="Crop_Executed"/>
+
+						<!-- Rotate Button -->
+						<Button Content="Rotate" Style="{StaticResource ToolButtonStyle}" Click="RotateButton_Click" Margin="5"/>
+
+
+
+						<!-- resize Button -->
+						<Button x:Name="ResizeButton" Content="Resize" Style="{StaticResource ToolButtonStyle}"
+							 Click="ResizeButton_Click" />
+
+						<GroupBox x:Name="ResizeGroupBox" Header="Resize Image" Margin="5" Padding="5" Foreground="White" Visibility="Collapsed">
+
+							<Grid>
+								<Grid.RowDefinitions>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+								</Grid.RowDefinitions>
+
+								<!-- Dimension Controls -->
+								<StackPanel Grid.Row="0" Orientation="Vertical" Margin="0,5">
+									<Label Content="Width:" VerticalAlignment="Center" Width="50" Foreground="White"/>
+									<TextBox x:Name="WidthTextBox" Width="70" Height="23" VerticalContentAlignment="Center"
+											 TextChanged="WidthTextBox_TextChanged"/>
+
+									<Label Content="Height:" VerticalAlignment="Center" Width="50" Margin="10,0,0,0" Foreground="White"/>
+									<TextBox x:Name="HeightTextBox" Width="70" Height="23" VerticalContentAlignment="Center"
+											 TextChanged="HeightTextBox_TextChanged"/>
+
+									<CheckBox x:Name="MaintainAspectRatioCheckBox" Content="Keep ratio" IsChecked="True"
+											  VerticalAlignment="Center" Margin="10,0,0,0"
+											  Checked="MaintainAspectRatio_CheckedChanged"
+											  Unchecked="MaintainAspectRatio_CheckedChanged"
+											  Foreground="White"/>
+								</StackPanel>
+
+								<!-- Common Size Presets -->
+								<StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5">
+									<Label Content="" VerticalAlignment="Center"/>
+									<ComboBox x:Name="SizePresetsComboBox" Width="120" SelectionChanged="SizePreset_SelectionChanged">
+										<ComboBoxItem Content="Custom" IsSelected="True"/>
+										<ComboBoxItem Content="Facebook (1200×630)" Tag="1200,630"/>
+										<ComboBoxItem Content="Instagram (1080×1080)" Tag="1080,1080"/>
+										<ComboBoxItem Content="Twitter (1024×512)" Tag="1024,512"/>
+										<ComboBoxItem Content="HD (1920×1080)" Tag="1920,1080"/>
+										<ComboBoxItem Content="4K (3840×2160)" Tag="3840,2160"/>
+									</ComboBox>
+								</StackPanel>
+
+								<!-- Apply Button -->
+								<Button Grid.Row="2" x:Name="ApplyResizeButton" Content="Apply Resize"
+									 Style="{StaticResource ToolButtonStyle}" ToolTip="Resize Image"
+									 HorizontalAlignment="Center" Margin="4,0"
+									  Click="ApplyResizeButton_Click"/>
+
+							</Grid>
+						</GroupBox>
+
+                        <Button x:Name="AdjustColorsToggleButton" Content="Adjust Colors"
+                    Style="{StaticResource ToolButtonStyle}"
+                    Click="AdjustColorsToggleButton_Click" />
+
+						<!--Adjust Color-->
+						<StackPanel x:Name="ColorSlidersPanel" Visibility="Collapsed" Margin="10,0,0,0">
+							<Label Content="Red" Style="{StaticResource LabelStyle}"/>
+							<Slider x:Name="RedSlider" Minimum="0.0" Maximum="2.0" Value="1.0"
+                        SmallChange="0.01" LargeChange="0.1" ValueChanged="ColorSlider_ValueChanged"
+                        Width="150"/>
+							<Label Content="Green" Style="{StaticResource LabelStyle}"/>
+							<Slider x:Name="GreenSlider" Minimum="0.0" Maximum="2.0" Value="1.0"
+                        SmallChange="0.01" LargeChange="0.1" ValueChanged="ColorSlider_ValueChanged"
+                        Width="150"/>
+							<Label Content="Blue" Style="{StaticResource LabelStyle}"/>
+							<Slider x:Name="BlueSlider" Minimum="0.0" Maximum="2.0" Value="1.0"
+                        SmallChange="0.01" LargeChange="0.1" ValueChanged="ColorSlider_ValueChanged"
+                        Width="150"/>
+						</StackPanel>
+
+                        <Button x:Name="ContrastToggleButton" Content="Contrast"
+                    Style="{StaticResource ToolButtonStyle}"
+                    Click="ContrastToggleButton_Click" />
+
+                        <Slider x:Name="ContrastSlider"
+                    Minimum="0.0" Maximum="2.0"
+                    Value="1.0"
+                    SmallChange="0.01" LargeChange="0.1"
+                    ValueChanged="ContrastSlider_ValueChanged"
+                    Visibility="Collapsed"
+                    Width="150"/>
+
+                        <Button x:Name="BrightnessToggleButton" Content="Brightness"
+                    Style="{StaticResource ToolButtonStyle}"
+                    Click="BrightnessToggleButton_Click" />
+
+                        <Slider x:Name="BrightnessSlider"
+                    Minimum="0.0" Maximum="2.0"
+                    Value="1.0"
+                    SmallChange="0.01" LargeChange="0.1"
+                    ValueChanged="BrightnessSlider_ValueChanged"
+                    Visibility="Collapsed"
+                    Width="150"/>
+
+                        <!-- Filter Button -->
+                        <Button Content="Apply Filter" Command="{Binding FilterCommand}"
+                    Style="{StaticResource ToolButtonStyle}"
+                    Margin="5" Click="FilterButton_Click"/>
+
+                        <Button Content="Frame" Style="{StaticResource ToolButtonStyle}"  Click="ToggleFrameOptions_Click" Margin="5"/>
+
+                        
+
+
+
+                        
+
+                        <!--Code for Frame-->
+                        <StackPanel x:Name="FrameOptionsPanel" Visibility="Collapsed" Margin="10,0,0,0">
+                            <Button Content="Leafy" Style="{StaticResource ToolButtonStyle}"  Click="ApplyLeafyFrame_Click" Margin="5"/>
+                            <Button Content="Floral" Style="{StaticResource ToolButtonStyle}"  Click="ApplyFloralFrame_Click" Margin="5"/>
+                            <Button Content="Sky" Style="{StaticResource ToolButtonStyle}" Click="ApplySkyFrame_Click" Margin="5"/>
+							<Button Content="Love Shape" Style="{StaticResource ToolButtonStyle}" Click="ApplyLoveFrame_Click" Margin="5"/>
+							<Button Content="Design" Style="{StaticResource ToolButtonStyle}" Click="ApplyDesignFrame_Click" Margin="5"/>
+                        </StackPanel>
+
+						<!-- Add Text Button -->
+						<Button x:Name="AddTextButton" Content="Add Text" Style="{StaticResource ToolButtonStyle}"
+								Click="ToggleTextToolPanel"/>
+
+						<!-- Text Tool Panel (Initially Hidden) -->
+						<GroupBox x:Name="TextToolPanel" Header="Text Tool" Margin="5" Padding="5" Foreground="White"
+								  Visibility="Collapsed">
+							<StackPanel Orientation="Vertical">
+								<Label Content="Enter Text:" Foreground="White"/>
+								<TextBox x:Name="TextInputBox" Width="200" Height="30"/>
+
+								<Label Content="Font Size:" Foreground="White"/>
+								<Slider x:Name="FontSizeSlider" Minimum="10" Maximum="100" Value="30"
+										ValueChanged="FontSizeSlider_ValueChanged"/>
+
+								<Button Content="Apply Text" Click="ApplyTextToImage" Style="{StaticResource ToolButtonStyle}"/>
+								<Button Content="Remove Text" Click="RemoveTextFromImage" Style="{StaticResource ToolButtonStyle}"/>
+							</StackPanel>
+						</GroupBox>
+
+
+						<Separator Background="#FF555555" Margin="5"/>
+						<Separator Background="#FF555555" Margin="5"/>
+						<Separator Background="#FF555555" Margin="5"/>
+						<Separator Background="#FF555555" Margin="5"/>
+
+
+
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+
+            
+		
+
+
+
+
+             <!-- Upadated For crop -->
+            <Canvas Name="SelectionCanvas" MouseWheel="SelectionCanvas_MouseWheel" Background="Transparent" Grid.Column="1">
+                <!-- Image that will be zoomed -->
+                <Image x:Name="ImageWorkspace" Stretch="None" Canvas.Left="0" Canvas.Top="0" Cursor="Hand" IsHitTestVisible="True" />
+                <!-- Rectangle for selection (hidden by default) -->
+                <Rectangle x:Name="SelectionRectangle" Stroke="White" StrokeThickness="2" Visibility="Collapsed" Fill="#30FF0000"/>
+            </Canvas>
+            
+            
+
+
+        </Grid>
+    </DockPanel>
+</Window>

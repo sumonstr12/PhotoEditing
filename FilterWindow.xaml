@@ -1,0 +1,38 @@
+﻿<Window x:Class="PhotoEditor_WPF_.FilterWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Apply Filters" Height="500" Width="600"
+        WindowStartupLocation="CenterOwner"
+		Background="Black">
+	
+	<Grid Margin="10">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+
+		<!-- Image Preview -->
+		<Image x:Name="ImagePreview" Grid.Row="0" Stretch="Uniform" Margin="0,0,0,10"/>
+
+		<!-- Filter Buttons -->
+		<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,10">
+			<Button Content="Original" Margin="5" Padding="10,5" Click="OriginalButton_Click"/>
+			<Button Content="Grayscale" Margin="5" Padding="10,5" Click="GrayscaleButton_Click"/>
+			<Button Content="Sepia" Margin="5" Padding="10,5" Click="SepiaButton_Click"/>
+			<Button Content="Invert" Margin="5" Padding="10,5" Click="InvertButton_Click"/>
+			<Button Content="Cyberpunk" Margin="5" Padding="10,5" Click="CyberpunkButton_Click"/>
+			<Button Content="Retro" Margin="5" Padding="10,5" Click="RetroButton_Click"/>
+			<Button Content="Polaroid" Margin="5" Padding="10,5" Click="PolaroidButton_Click"/>
+			<Button Content="Comic" Margin="5" Padding="10,5" Click="ComicButton_Click"/>
+
+
+		</StackPanel>
+
+		<!-- OK and Cancel Buttons -->
+		<StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+			<Button Content="OK" Margin="5" Padding="10,5" IsDefault="True" Click="OKButton_Click"/>
+			<Button Content="Cancel" Margin="5" Padding="10,5" IsCancel="True" Click="CancelButton_Click"/>
+		</StackPanel>
+	</Grid>
+</Window>
